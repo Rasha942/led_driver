@@ -7,7 +7,7 @@
 #include "gpio_ioctl.h"  
 
 // Function to handle user input for selecting pin direction and state
-void set_gpio_pin(int fd, int pin_number) 
+void set_gpio_pin(int fd, int pin_number)
 {
     gpio_pin pin;
     pin.pin_number = pin_number;
@@ -17,19 +17,19 @@ void set_gpio_pin(int fd, int pin_number)
     scanf("%d", &pin.direction);
 
     // Send ioctl command to set pin direction
-    if (ioctl(fd, GPIO_SET_PIN_DIR, &pin) == -1) 
+    if (ioctl(fd, GPIO_SET_PIN_DIR, &pin) == -1)
     {
         perror("Failed to set pin direction");
         return;
     }
     // If output, user choose state of pin (high or low)
-    if (pin.direction == GPIO_OUTPUT) 
+    if (pin.direction == GPIO_OUTPUT)
     {
         printf("Enter state for GPIO pin %d (0 for LOW, 1 for HIGH): ", pin_number);
         scanf("%d", &pin.state);
 
         // Send ioctl command to set pin state
-        if (ioctl(fd, GPIO_SET_PIN_STATE, &pin) == -1) 
+        if (ioctl(fd, GPIO_SET_PIN_STATE, &pin) == -1)
         {
             perror("Failed to set pin state");
             return;
@@ -40,12 +40,12 @@ void set_gpio_pin(int fd, int pin_number)
     printf("GPIO pin %d direction and state set successfully.\n", pin_number);
 }
 
-int main() 
+int main()
 {
     int fd = 0, pin_number = 0;
 
     fd = open("/dev/gpio_device", O_RDWR);
-    if (fd == -1) 
+    if (fd == -1)
     {
         perror("Failed to open GPIO device");
         return -1;

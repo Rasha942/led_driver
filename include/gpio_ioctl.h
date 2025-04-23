@@ -1,6 +1,6 @@
 
 #ifndef __GPIO_IOCTL_H__
-#define __GPIO_IOCTL_H__
+#define __GPIO_IOCTL_H__ 
 
 #include <linux/ioctl.h>  // For defining IOCTL macros
 
@@ -26,7 +26,7 @@ typedef struct gpio_pin
 #define GPIO_SET_PIN_DIR  _IOW(GPIO_IOCTL_MAGIC_NUM, 1, struct gpio_pin)
 #define GPIO_SET_PIN_STATE _IOW(GPIO_IOCTL_MAGIC_NUM, 2, struct gpio_pin)
 
-long gpio_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
+long gpio_ioctl(struct file* file, unsigned int cmd, unsigned long arg);
 
 
 #endif //__GPIO_IOCTL_H__
