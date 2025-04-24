@@ -11,7 +11,7 @@ void set_gpio_pin(int fd, int pin_number)
 {
     gpio_pin pin;
     pin.pin_number = pin_number;
-
+    pin.flicker_speed = 0;
     // user choose direction of pin (input or output)
     printf("Enter direction for GPIO pin %d (0 for input, 1 for output): ", pin_number);
     scanf("%d", &pin.direction);
@@ -27,7 +27,17 @@ void set_gpio_pin(int fd, int pin_number)
     {
         printf("Enter state for GPIO pin %d (0 for LOW, 1 for HIGH): ", pin_number);
         scanf("%d", &pin.state);
+        if (GPIO_HIGH == pin.state)
+        {
 
+
+            printf("Choose flicker speed in ms (for no flicker enter 0):\n");
+            scanf("%d", &pin.flicker_speed);
+        }
+    }
+
+    if (0 == pin.flicker_speed)
+    {
         // Send ioctl command to set pin state
         if (ioctl(fd, GPIO_SET_PIN_STATE, &pin) == -1)
         {
@@ -35,10 +45,19 @@ void set_gpio_pin(int fd, int pin_number)
             return;
         }
     }
-
+    else
+    {
+        // Send ioctl command to start flickering
+        if (ioctl(fd, GPIO_START_FLICKER, &pin) == -1)
+        {
+            perror("Failed to start flickering");
+            return;
+        }
+    }
 
     printf("GPIO pin %d direction and state set successfully.\n", pin_number);
 }
+
 
 int main()
 {

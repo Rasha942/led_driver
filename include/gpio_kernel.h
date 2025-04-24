@@ -11,9 +11,10 @@
 
 
 
-// offest for GPIO Function Select        
-#define GPIO_BASE_ADDR 0x7E200000  
-
+#define MAX_GPIO_PINS    54
+#define GPIO_BASE_ADDR   0x3F200000  
+#define GPIO_REGS_SIZE   0xB4
+// offset for GPIO Function Select        
 #define GPFSEL0_OFFSET    0x00    // pins 0-9
 #define GPFSEL1_OFFSET    0x04   // pins 10-19
 #define GPFSEL2_OFFSET    0x08   // pins 20 - 29
