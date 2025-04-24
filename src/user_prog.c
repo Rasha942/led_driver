@@ -31,7 +31,7 @@ void set_gpio_pin(int fd, int pin_number)
         {
 
 
-            printf("Choose flicker speed in ms (for no flicker enter 0):\n");
+            printf("Choose flicker interval speed in ms (for no flicker enter 0): ");
             scanf("%d", &pin.flicker_speed);
         }
     }

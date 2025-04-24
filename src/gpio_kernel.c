@@ -275,6 +275,18 @@ static int GPIORelease(struct inode* inode, struct file* file)
 
 static int __init gpio_init(void)
 {
+
+    // major_num = register_chrdev(0, DEVICE_NAME, &gpio_fops);
+    // if (major_num < 0)
+    // {
+        //     iounmap(gpio_base_virtual);
+        //     printk(KERN_ALERT "GPIO: Failed to register device, error %d\n", major_num);
+        //     return major_num;
+        // }
+
+
+    int major_num = 0;
+    int ret = alloc_chrdev_region(&dev, 0, 1, DEVICE_NAME);
     gpio_base_virtual = ioremap(GPIO_BASE_ADDR, GPIO_REGS_SIZE);
     if (gpio_base_virtual == NULL)
     {
@@ -282,72 +294,50 @@ static int __init gpio_init(void)
         return -ENOMEM;
     }
 
-    major_num = register_chrdev(0, DEVICE_NAME, &gpio_fops);
-    if (major_num < 0)
+    if (ret < 0)
     {
-        iounmap(gpio_base_virtual);
-        printk(KERN_ALERT "GPIO: Failed to register device, error %d\n", major_num);
-        return major_num;
+        printk(KERN_ALERT "GPIO: Unable to register device\n");
+        return ret;
     }
+    major_num = MAJOR(dev);
+    printk(KERN_INFO "GPIO: major number = %d\n", major_num);
+
+    cdev_init(&gpio_cdev, &gpio_fops);
+    gpio_cdev.owner = THIS_MODULE;
+    ret = cdev_add(&gpio_cdev, dev, 1);
+    if (ret < 0)
+    {
+        unregister_chrdev_region(dev, 1);
+        printk(KERN_ALERT "GPIO: Failed to add cdev\n");
+        return ret;
+    }
+
+
+
+
+    gpio_class = class_create(DEVICE_NAME);
+    if (IS_ERR(gpio_class))
+    {
+        cdev_del(&gpio_cdev);
+        unregister_chrdev_region(dev, 1);
+        printk(KERN_ALERT "GPIO: Failed to create class\n");
+        return PTR_ERR(gpio_class);
+    }
+
+    // Create device node in /dev/
+    gpio_device = device_create(gpio_class, NULL, dev, NULL, DEVICE_NAME);
+    if (IS_ERR(gpio_device))
+    {
+        class_destroy(gpio_class);
+        cdev_del(&gpio_cdev);
+        unregister_chrdev_region(dev, 1);
+        printk(KERN_ALERT "GPIO: Failed to create device\n");
+        return PTR_ERR(gpio_device);
+    }
+
     printk(KERN_INFO "GPIO: Device registered with major number %d\n", major_num);
 
-    // printk(KERN_INFO "GPIO driver initialized\n");
     return 0;
-    // int major_num = 0;
-    // int ret = alloc_chrdev_region(&dev, 0, 1, DEVICE_NAME);
-
-    // if (ret < 0)
-    // {
-    //     printk(KERN_ALERT "GPIO: Unable to register device\n");
-    //     return ret;
-    // }
-    // major_num = MAJOR(dev);
-    // printk(KERN_INFO "GPIO: major number = %d\n", major_num);
-
-    // cdev_init(&gpio_cdev, &gpio_fops);
-    // gpio_cdev.owner = THIS_MODULE;
-    // ret = cdev_add(&gpio_cdev, dev, 1);
-    // if (ret < 0)
-    // {
-    //     unregister_chrdev_region(dev, 1);
-    //     printk(KERN_ALERT "GPIO: Failed to add cdev\n");
-    //     return ret;
-    // }
-
-
-    // // Memory map the GPIO registers bus addresses to virtual addresses 
-    // gpio_base_virtual = ioremap(GPIO_BASE_ADDR, 80);  // 40 = size of used registers
-    // if (NULL == gpio_base_virtual)
-    // {
-    //     cdev_del(&gpio_cdev);
-    //     unregister_chrdev_region(dev, 1);
-    //     printk(KERN_ALERT "GPIO: Failed to map GPIO registers to virtual memory\n");
-    //     return -ENOMEM;
-    // }
-
-    // gpio_class = class_create(DEVICE_NAME);
-    // if (IS_ERR(gpio_class))
-    // {
-    //     cdev_del(&gpio_cdev);
-    //     unregister_chrdev_region(dev, 1);
-    //     printk(KERN_ALERT "GPIO: Failed to create class\n");
-    //     return PTR_ERR(gpio_class);
-    // }
-
-    // // Create device node in /dev/
-    // gpio_device = device_create(gpio_class, NULL, dev, NULL, DEVICE_NAME);
-    // if (IS_ERR(gpio_device))
-    // {
-    //     class_destroy(gpio_class);
-    //     cdev_del(&gpio_cdev);
-    //     unregister_chrdev_region(dev, 1);
-    //     printk(KERN_ALERT "GPIO: Failed to create device\n");
-    //     return PTR_ERR(gpio_device);
-    // }
-
-    // printk(KERN_INFO "GPIO driver initialized\n");
-
-    // return 0;
 }
 
 static void __exit gpio_exit(void)
@@ -361,19 +351,20 @@ static void __exit gpio_exit(void)
         {
             kthread_stop(flicker_threads[i]);
             flicker_threads[i] = NULL;
+            printk(KERN_INFO "GPIO:Stopped flicker thread on pin %d\n", i);
+
         }
     }
 
-    unregister_chrdev(major_num, DEVICE_NAME);
+    unregister_chrdev_region(dev, 1);  // 1 = NUMBER OF MINOR NUMS e.g devices that uses the device driver
 
     if (NULL != gpio_base_virtual)
     {
         iounmap(gpio_base_virtual);
     }
-    // device_destroy(gpio_class, dev);
-    // class_destroy(gpio_class);
-    // cdev_del(&gpio_cdev);
-    // unregister_chrdev_region(dev, 1);  // 1 = NUMBER OF MINOR NUMS e.g devices that uses the device driver
+    device_destroy(gpio_class, dev);
+    class_destroy(gpio_class);
+    cdev_del(&gpio_cdev);
     printk(KERN_INFO "GPIO driver exited\n");
 }
 
