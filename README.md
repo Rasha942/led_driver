@@ -64,6 +64,20 @@ sudo rmmod gpio_kernel
 
 > The IRQ demo uses GPIO 27 (IRQ 49) — see `GPIO_IRQ_PIN` / `GPIO_IRQ_NUM`.
 
+## Demo
+
+`demo.sh` is an end-to-end proof of concept: it builds the module, loads it,
+blinks an LED, prints the driver's kernel log, and unloads. Wire an LED (with a
+resistor) between the chosen BCM GPIO pin and ground, then:
+
+```sh
+sudo ./demo.sh         # default pin: BCM GPIO 17
+sudo ./demo.sh 23      # or pick another pin
+```
+
+It must run on a Raspberry Pi — on any other machine `insmod` fails by design,
+so there the portable proof is simply that `make` compiles the driver.
+
 ## Notes / limitations
 
 - Physical addresses are board-specific (see above). The driver **must** run on a
