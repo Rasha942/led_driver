@@ -15,25 +15,25 @@
 #define GPIO_LOW   0        
 #define GPIO_HIGH  1
 
-
 typedef struct gpio_pin
 {
     int pin_number;
     int direction;
     int state;
     int flicker_speed;
+    int x;
+    int y;
 }gpio_pin;
 
 #define GPIO_SET_PIN_DIR  _IOW(GPIO_IOCTL_MAGIC_NUM, 1, struct gpio_pin)
 #define GPIO_SET_PIN_STATE _IOW(GPIO_IOCTL_MAGIC_NUM, 2, struct gpio_pin)
 #define GPIO_START_FLICKER _IOW(GPIO_IOCTL_MAGIC_NUM, 3, struct gpio_pin)
-#define GPIO_KEYBOARD_LED _IOW(GPIO_IOCTL_MAGIC_NUM, 4, struct gpio_pin)
+#define GPIO_STOP_FLICKER _IOW(GPIO_IOCTL_MAGIC_NUM, 4, struct gpio_pin)
+#define GPIO_KGDB_TEST _IOW(GPIO_IOCTL_MAGIC_NUM, 5, struct gpio_pin)
 
+#ifdef __KERNEL__
 long gpio_ioctl(struct file* file, unsigned int cmd, unsigned long arg);
-
+#endif
 
 #endif //__GPIO_IOCTL_H__
-
-
-
 

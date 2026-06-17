@@ -1,0 +1,21 @@
+# Editor / tooling
+.vscode/
+.clangd
+
+# Archived / scratch
+old/
+err
+
+# Kernel module build artifacts
+*.o
+*.ko
+*.mod
+*.mod.c
+*.symvers
+*.order
+.*.cmd
+.tmp_versions/
+src/.tmp_versions/
+
+# User-space build output
+user_prog
