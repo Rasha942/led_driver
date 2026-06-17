@@ -41,7 +41,7 @@ Makefile                Builds the module and the user program
 On the Pi (with kernel headers installed):
 
 ```sh
-make            # builds the kernel module (src/gpio_kernel.ko) and user_prog
+make            # builds the kernel module (gpio_kernel.ko) and user_prog
 make module     # module only
 make user       # user program only
 make clean
@@ -56,7 +56,7 @@ make module KDIR=/path/to/rpi-linux ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
 ## Run
 
 ```sh
-sudo insmod src/gpio_kernel.ko     # /dev/gpio_driver appears
+sudo insmod gpio_kernel.ko         # /dev/gpio_driver appears
 sudo ./user_prog                   # follow the prompts (pin, direction, state, flicker)
 dmesg | tail                       # driver logs
 sudo rmmod gpio_kernel
